@@ -124,6 +124,7 @@ export async function sendMessage(
           threadId: data.thread_id,
           agent: data.agent,
           role: data.role,
+          metadata: data.metadata,
           content: "",
           contentChunks: [],
           isStreaming: true,
@@ -345,6 +346,12 @@ export function useMessage(messageId: string | null | undefined) {
 
 export function useMessageIds() {
   return useStore(useShallow((state) => state.messageIds));
+}
+
+export function useMessages() {
+  return useStore(
+    useShallow((state) => state.messageIds.map((id) => state.messages.get(id))),
+  );
 }
 
 export function useLastInterruptMessage() {

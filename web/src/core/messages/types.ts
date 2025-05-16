@@ -6,6 +6,7 @@ export type MessageRole = "user" | "assistant" | "tool";
 export interface Message {
   id: string;
   threadId: string;
+  metadata?: Record<string, unknown>;
   agent?:
     | "coordinator"
     | "planner"

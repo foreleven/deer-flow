@@ -132,6 +132,7 @@ async def _astream_workflow_generator(
             "id": message_chunk.id,
             "role": "assistant",
             "content": message_chunk.content,
+            "metadata": message_metadata,
         }
         if message_chunk.response_metadata.get("finish_reason"):
             event_stream_message["finish_reason"] = message_chunk.response_metadata.get(

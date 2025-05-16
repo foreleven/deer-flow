@@ -30,6 +30,7 @@ interface GenericEvent<T extends string, D extends object> {
     agent: "coordinator" | "planner" | "researcher" | "coder" | "reporter";
     role: "user" | "assistant" | "tool";
     finish_reason?: "stop" | "tool_calls" | "interrupt";
+    metadata?: Record<string, unknown>;
   } & D;
 }
 

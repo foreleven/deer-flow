@@ -1,7 +1,7 @@
 // Copyright (c) 2025 Bytedance Ltd. and/or its affiliates
 // SPDX-License-Identifier: MIT
 
-import { useCallback, useRef } from "react";
+import { useCallback } from "react";
 
 import { LoadingAnimation } from "~/components/deer-flow/loading-animation";
 import { Markdown } from "~/components/deer-flow/markdown";
@@ -36,27 +36,10 @@ export function ResearchReportBlock({
     },
     [message],
   );
-  const contentRef = useRef<HTMLDivElement>(null);
   const isCompleted = message?.isStreaming === false && message?.content !== "";
-  // TODO: scroll to top when completed, but it's not working
-  // useEffect(() => {
-  //   if (isCompleted && contentRef.current) {
-  //     setTimeout(() => {
-  //       contentRef
-  //         .current!.closest("[data-radix-scroll-area-viewport]")
-  //         ?.scrollTo({
-  //           top: 0,
-  //           behavior: "smooth",
-  //         });
-  //     }, 500);
-  //   }
-  // }, [isCompleted]);
 
   return (
-    <div
-      ref={contentRef}
-      className={cn("relative flex flex-col pt-4 pb-8", className)}
-    >
+    <div className={cn("relative flex flex-col pt-4 pb-8", className)}>
       {!isReplay && isCompleted && editing ? (
         <ReportEditor
           content={message?.content}
