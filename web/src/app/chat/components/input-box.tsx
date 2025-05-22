@@ -1,6 +1,8 @@
 // Copyright (c) 2025 Bytedance Ltd. and/or its affiliates
 // SPDX-License-Identifier: MIT
 
+import Mentions from "@rc-component/mentions";
+import type { MentionsRef } from "@rc-component/mentions/lib/Mentions";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUp, X } from "lucide-react";
 import {
@@ -12,8 +14,10 @@ import {
 } from "react";
 
 import { Detective } from "~/components/deer-flow/icons/detective";
+import MessageInput from "~/components/deer-flow/message-input";
 import { Tooltip } from "~/components/deer-flow/tooltip";
 import { Button } from "~/components/ui/button";
+import { resolveServiceURL } from "~/core/api/resolve-service-url";
 import type { Option } from "~/core/messages";
 import {
   setEnableBackgroundInvestigation,
@@ -41,10 +45,14 @@ export function InputBox({
   const [message, setMessage] = useState("");
   const [imeStatus, setImeStatus] = useState<"active" | "inactive">("inactive");
   const [indent, setIndent] = useState(0);
+  const [resources, setResources] = useState<{ uri: string; title: string }[]>(
+    [],
+  );
   const backgroundInvestigation = useSettingsStore(
     (state) => state.general.enableBackgroundInvestigation,
   );
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<MentionsRef>(null);
   const feedbackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -80,7 +88,11 @@ export function InputBox({
   }, [responding, onCancel, message, onSend, feedback, onRemoveFeedback]);
 
   const handleKeyDown = useCallback(
-    (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    (
+      event:
+        | KeyboardEvent<HTMLTextAreaElement>
+        | KeyboardEvent<HTMLInputElement>,
+    ) => {
       if (responding) {
         return;
       }
@@ -98,8 +110,25 @@ export function InputBox({
     [responding, imeStatus, handleSendMessage],
   );
 
+  const handleResourceSuggestion = useCallback((query: string) => {
+    fetch(resolveServiceURL(`rag/resources?query=${query}`), {
+      method: "GET",
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        setResources(res.resources);
+      })
+      .catch((err) => {
+        setResources([]);
+      });
+  }, []);
+
+  console.log(resources);
   return (
-    <div className={cn("bg-card relative rounded-[24px] border", className)}>
+    <div
+      className={cn("bg-card relative rounded-[24px] border", className)}
+      ref={containerRef}
+    >
       <div className="w-full">
         <AnimatePresence>
           {feedback && (
@@ -122,7 +151,14 @@ export function InputBox({
             </motion.div>
           )}
         </AnimatePresence>
-        <textarea
+        <MessageInput
+          content={message}
+          onChange={(value) => {
+            console.log(value);
+            setMessage(value);
+          }}
+        />
+        {/* <textarea
           ref={textareaRef}
           className={cn(
             "m-0 w-full resize-none border-none px-4 py-3 text-lg",
@@ -141,7 +177,7 @@ export function InputBox({
           onChange={(event) => {
             setMessage(event.target.value);
           }}
-        />
+        /> */}
       </div>
       <div className="flex items-center px-4 py-2">
         <div className="flex grow">
