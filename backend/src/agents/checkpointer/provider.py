@@ -44,17 +44,21 @@ POSTGRES_CONN_REQUIRED = "checkpointer.connection_string is required for the pos
 # ---------------------------------------------------------------------------
 
 
-def _make_sync_checkpointer(config: CheckpointerConfig) -> Checkpointer:
-    """Build a sync checkpointer for *config*.
+@contextlib.contextmanager
+def _sync_checkpointer_cm(config: CheckpointerConfig) -> Iterator[Checkpointer]:
+    """Context manager that creates and tears down a sync checkpointer.
 
-    Returns ``(saver, cleanup_fn)`` where *cleanup_fn* closes the underlying
-    connection/pool, or ``None`` when no cleanup is required (e.g. memory).
+    Returns a configured ``Checkpointer`` instance. Resource cleanup for any
+    underlying connections or pools is handled by higher-level helpers in
+    this module (such as the singleton factory or context manager); this
+    function does not return a separate cleanup callback.
     """
     if config.type == "memory":
         from langgraph.checkpoint.memory import InMemorySaver
 
         logger.info("Checkpointer: using InMemorySaver (in-process, not persistent)")
-        return InMemorySaver()
+        yield InMemorySaver()
+        return
 
     if config.type == "sqlite":
         try:
@@ -66,7 +70,8 @@ def _make_sync_checkpointer(config: CheckpointerConfig) -> Checkpointer:
         with SqliteSaver.from_conn_string(conn_str) as saver:
             saver.setup()
             logger.info("Checkpointer: using SqliteSaver (%s)", conn_str)
-            return saver
+            yield saver
+        return
 
     if config.type == "postgres":
         try:
@@ -80,7 +85,8 @@ def _make_sync_checkpointer(config: CheckpointerConfig) -> Checkpointer:
         with PostgresSaver.from_conn_string(config.connection_string) as saver:
             saver.setup()
             logger.info("Checkpointer: using PostgresSaver")
-            return saver
+            yield saver
+        return
 
     raise ValueError(f"Unknown checkpointer type: {config.type!r}")
 
@@ -90,6 +96,7 @@ def _make_sync_checkpointer(config: CheckpointerConfig) -> Checkpointer:
 # ---------------------------------------------------------------------------
 
 _checkpointer: Checkpointer = None
+_checkpointer_ctx = None  # open context manager keeping the connection alive
 
 
 def get_checkpointer() -> Checkpointer | None:
@@ -101,7 +108,7 @@ def get_checkpointer() -> Checkpointer | None:
         ImportError: If the required package for the configured backend is not installed.
         ValueError: If ``connection_string`` is missing for a backend that requires it.
     """
-    global _checkpointer
+    global _checkpointer, _checkpointer_ctx
 
     if _checkpointer is not None:
         return _checkpointer
@@ -112,7 +119,8 @@ def get_checkpointer() -> Checkpointer | None:
     if config is None:
         return None
 
-    _checkpointer = _make_sync_checkpointer(config)
+    _checkpointer_ctx = _sync_checkpointer_cm(config)
+    _checkpointer = _checkpointer_ctx.__enter__()
 
     return _checkpointer
 
@@ -120,9 +128,16 @@ def get_checkpointer() -> Checkpointer | None:
 def reset_checkpointer() -> None:
     """Reset the sync singleton, forcing recreation on the next call.
 
+    Closes any open backend connections and clears the cached instance.
     Useful in tests or after a configuration change.
     """
-    global _checkpointer
+    global _checkpointer, _checkpointer_ctx
+    if _checkpointer_ctx is not None:
+        try:
+            _checkpointer_ctx.__exit__(None, None, None)
+        except Exception:
+            logger.warning("Error during checkpointer cleanup", exc_info=True)
+        _checkpointer_ctx = None
     _checkpointer = None
 
 
@@ -148,5 +163,5 @@ def checkpointer_context() -> Iterator[Checkpointer | None]:
         yield None
         return
 
-    saver = _make_sync_checkpointer(config.checkpointer)
-    yield saver
+    with _sync_checkpointer_cm(config.checkpointer) as saver:
+        yield saver

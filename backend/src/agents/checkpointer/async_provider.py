@@ -7,9 +7,9 @@ Supported backends: memory, sqlite, postgres.
 
 Usage (e.g. FastAPI lifespan)::
 
-    from src.agents.checkpointer.aio.provider import checkpointer_lifespan
+    from src.agents.checkpointer.async_provider import make_checkpointer
 
-    async with checkpointer_lifespan() as checkpointer:
+    async with make_checkpointer() as checkpointer:
         app.state.checkpointer = checkpointer  # None if not configured
 
 For sync usage see :mod:`src.agents.checkpointer.provider`.
