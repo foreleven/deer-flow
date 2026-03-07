@@ -44,6 +44,18 @@ POSTGRES_CONN_REQUIRED = "checkpointer.connection_string is required for the pos
 # ---------------------------------------------------------------------------
 
 
+def _resolve_sqlite_conn_str(raw: str) -> str:
+    """Return a SQLite connection string ready for use with ``SqliteSaver``.
+
+    SQLite special strings (``":memory:"`` and ``file:`` URIs) are returned
+    unchanged.  Plain filesystem paths — relative or absolute — are resolved
+    to an absolute string via :func:`resolve_path`.
+    """
+    if raw == ":memory:" or raw.startswith("file:"):
+        return raw
+    return str(resolve_path(raw))
+
+
 @contextlib.contextmanager
 def _sync_checkpointer_cm(config: CheckpointerConfig) -> Iterator[Checkpointer]:
     """Context manager that creates and tears down a sync checkpointer.
@@ -66,7 +78,7 @@ def _sync_checkpointer_cm(config: CheckpointerConfig) -> Iterator[Checkpointer]:
         except ImportError as exc:
             raise ImportError(SQLITE_INSTALL) from exc
 
-        conn_str = resolve_path(config.connection_string or "store.db")
+        conn_str = _resolve_sqlite_conn_str(config.connection_string or "store.db")
         with SqliteSaver.from_conn_string(conn_str) as saver:
             saver.setup()
             logger.info("Checkpointer: using SqliteSaver (%s)", conn_str)

@@ -181,13 +181,9 @@ def get_paths() -> Paths:
 def resolve_path(path: str) -> Path:
     """Resolve *path* to an absolute ``Path``.
 
-    Any non-absolute string is resolved relative to the application base
-    directory.  Special SQLite connection strings (``":memory:"`` and
-    ``file:`` URIs) are returned as-is without path resolution.
+    Relative paths are resolved relative to the application base directory.
+    Absolute paths are returned as-is (after normalisation).
     """
-    # Pass through special SQLite connection strings unchanged.
-    if path == ":memory:" or path.startswith("file:"):
-        return Path(path)
     p = Path(path)
     if not p.is_absolute():
         p = get_paths().base_dir / path

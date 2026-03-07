@@ -27,9 +27,9 @@ from src.agents.checkpointer.provider import (
     POSTGRES_CONN_REQUIRED,
     POSTGRES_INSTALL,
     SQLITE_INSTALL,
+    _resolve_sqlite_conn_str,
 )
 from src.config.app_config import get_app_config
-from src.config.paths import resolve_path
 
 logger = logging.getLogger(__name__)
 
@@ -55,8 +55,10 @@ async def _async_checkpointer(config) -> AsyncIterator[Checkpointer]:
 
         import pathlib
 
-        conn_str = resolve_path(config.connection_string or "store.db")
-        pathlib.Path(conn_str).parent.mkdir(parents=True, exist_ok=True)
+        conn_str = _resolve_sqlite_conn_str(config.connection_string or "store.db")
+        # Only create parent directories for real filesystem paths
+        if conn_str != ":memory:" and not conn_str.startswith("file:"):
+            pathlib.Path(conn_str).parent.mkdir(parents=True, exist_ok=True)
         async with AsyncSqliteSaver.from_conn_string(conn_str) as saver:
             await saver.setup()
             yield saver
