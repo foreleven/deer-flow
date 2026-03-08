@@ -114,6 +114,17 @@ def test_thinking_enabled_raises_when_not_supported_but_when_thinking_enabled_is
         factory_module.create_chat_model(name="no-think", thinking_enabled=True)
 
 
+def test_thinking_enabled_raises_for_empty_when_thinking_enabled_explicitly_set(monkeypatch):
+    """supports_thinking guard fires when when_thinking_enabled is set to an empty dict —
+    the user explicitly provided the section, so the guard must still fire even though
+    effective_wte would be falsy."""
+    cfg = _make_app_config([_make_model("no-think-empty", supports_thinking=False, when_thinking_enabled={})])
+    _patch_factory(monkeypatch, cfg)
+
+    with pytest.raises(ValueError, match="does not support thinking"):
+        factory_module.create_chat_model(name="no-think-empty", thinking_enabled=True)
+
+
 def test_thinking_enabled_merges_when_thinking_enabled_settings(monkeypatch):
     wte = {"temperature": 1.0, "max_tokens": 16000}
     cfg = _make_app_config([_make_model("thinker", supports_thinking=True, when_thinking_enabled=wte)])
