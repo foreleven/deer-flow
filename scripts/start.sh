@@ -2,7 +2,7 @@
 #
 # start.sh - Start all DeerFlow development services
 #
-# Must be run from the repo root directory.
+# Can be run from any directory; it automatically changes to the repo root.
 
 set -e
 
@@ -17,7 +17,9 @@ pkill -f "uvicorn src.gateway.app:app" 2>/dev/null || true
 pkill -f "next dev" 2>/dev/null || true
 nginx -c "$REPO_ROOT/docker/nginx/nginx.local.conf" -p "$REPO_ROOT" -s quit 2>/dev/null || true
 sleep 1
-pkill -9 nginx 2>/dev/null || true
+if [ -f "$REPO_ROOT/logs/nginx.pid" ]; then
+    kill -9 "$(cat "$REPO_ROOT/logs/nginx.pid")" 2>/dev/null || true
+fi
 ./scripts/cleanup-containers.sh deer-flow-sandbox 2>/dev/null || true
 sleep 1
 
@@ -54,7 +56,8 @@ fi
 # ── Cleanup trap ─────────────────────────────────────────────────────────────
 
 cleanup() {
-    trap - INT TERM
+    local exit_code="${1:-0}"
+    trap - INT TERM EXIT
     echo ""
     echo "Shutting down services..."
     pkill -f "langgraph dev" 2>/dev/null || true
@@ -62,13 +65,16 @@ cleanup() {
     pkill -f "next dev" 2>/dev/null || true
     nginx -c "$REPO_ROOT/docker/nginx/nginx.local.conf" -p "$REPO_ROOT" -s quit 2>/dev/null || true
     sleep 1
-    pkill -9 nginx 2>/dev/null || true
+    if [ -f "$REPO_ROOT/logs/nginx.pid" ]; then
+        kill -9 "$(cat "$REPO_ROOT/logs/nginx.pid")" 2>/dev/null || true
+    fi
     echo "Cleaning up sandbox containers..."
     ./scripts/cleanup-containers.sh deer-flow-sandbox 2>/dev/null || true
     echo "✓ All services stopped"
-    exit 0
+    exit "$exit_code"
 }
-trap cleanup INT TERM
+trap 'cleanup 0' INT TERM
+trap 'cleanup $?' EXIT
 
 # ── Start services ────────────────────────────────────────────────────────────
 
@@ -79,7 +85,7 @@ echo "Starting LangGraph server..."
 ./scripts/wait-for-port.sh 2024 60 "LangGraph" || {
     echo "  See logs/langgraph.log for details"
     tail -20 logs/langgraph.log
-    cleanup
+    cleanup 1
 }
 echo "✓ LangGraph server started on localhost:2024"
 
@@ -91,7 +97,7 @@ echo "Starting Gateway API..."
     echo ""
     echo "Likely configuration errors:"
     grep -E "Failed to load configuration|Environment variable .* not found|config\.yaml.*not found" logs/gateway.log | tail -5 || true
-    cleanup
+    cleanup 1
 }
 echo "✓ Gateway API started on localhost:8001"
 
@@ -100,7 +106,7 @@ echo "Starting Frontend..."
 ./scripts/wait-for-port.sh 3000 120 "Frontend" || {
     echo "  See logs/frontend.log for details"
     tail -20 logs/frontend.log
-    cleanup
+    cleanup 1
 }
 echo "✓ Frontend started on localhost:3000"
 
@@ -109,7 +115,7 @@ nginx -g 'daemon off;' -c "$REPO_ROOT/docker/nginx/nginx.local.conf" -p "$REPO_R
 ./scripts/wait-for-port.sh 2026 10 "Nginx" || {
     echo "  See logs/nginx.log for details"
     tail -10 logs/nginx.log
-    cleanup
+    cleanup 1
 }
 echo "✓ Nginx started on localhost:2026"
 

@@ -17,6 +17,11 @@ PORT="${1:?Usage: wait-for-port.sh <port> [timeout] [service_name]}"
 TIMEOUT="${2:-60}"
 SERVICE="${3:-Service}"
 
+if ! command -v lsof >/dev/null 2>&1; then
+    echo "Error: 'lsof' is required by wait-for-port.sh but is not installed or not in PATH."
+    exit 1
+fi
+
 elapsed=0
 interval=1
 
