@@ -208,70 +208,169 @@ The `/messages` endpoint replays the journal, filtering to only human and final 
 
 ### 4.5 Frontend Changes
 
+All frontend changes live in **`frontend/src/core/threads/hooks.ts`**, inside the `useThreadStream` hook. No new hooks or files are required for the core logic.
+
 #### 4.5.1 Historical Messages State
 
-Introduce a `historyMessages` state slice alongside the existing `messages` state:
+Add three new `useState` entries at the top of `useThreadStream`, alongside the existing `optimisticMessages` and `isUploading` state:
 
 ```typescript
-interface ThreadChatState {
-  // Current run messages (live streaming or latest run)
+// frontend/src/core/threads/hooks.ts — inside useThreadStream()
+
+// Messages from previous runs, loaded on demand (prepended on scroll-up)
+const [historyMessages, setHistoryMessages] = useState<HistoricalRun[]>([]);
+// Run summary list for the current thread (used for pagination)
+const [runs, setRuns] = useState<RunSummary[]>([]);
+const [hasMoreRuns, setHasMoreRuns] = useState(false);
+```
+
+Supporting types (add to `frontend/src/core/threads/types.ts`):
+
+```typescript
+export interface HistoricalRun {
+  runId: string;
+  createdAt: string;        // Used as a visual separator between runs
   messages: Message[];
-
-  // Messages from previous runs, loaded on demand
-  historyMessages: HistoricalRun[];
-
-  // Run metadata list (used for pagination)
-  runs: RunSummary[];
-  hasMoreRuns: boolean;
+  isSummarized: boolean;    // True if context compression fired mid-run
 }
 
-interface HistoricalRun {
-  runId: string;
-  createdAt: string;         // Shown as a separator between runs
-  messages: Message[];
-  isSummarized: boolean;     // True if messages were compressed mid-run
+export interface RunSummary {
+  run_id: string;
+  created_at: string;
+  status: string;
+  model_name: string | null;
 }
 ```
 
-On thread load, the frontend fetches the latest run's journal via `/api/threads/{thread_id}/runs/{run_id}/messages` and populates `messages`.
+On thread load (when `threadId` becomes defined), fetch the latest run's reconstructed messages and populate the current run's display. This replaces relying solely on the Checkpointer state, which may already be compressed:
+
+```typescript
+// frontend/src/core/threads/hooks.ts — add useEffect inside useThreadStream()
+
+useEffect(() => {
+  if (!threadId) return;
+  void (async () => {
+    const res = await fetch(
+      `${getBackendBaseURL()}/api/threads/${encodeURIComponent(threadId)}/runs?limit=20`,
+    );
+    if (!res.ok) return;
+    const data: RunSummary[] = await res.json();
+    setRuns(data);
+    setHasMoreRuns(data.length === 20);
+  })();
+}, [threadId]);
+```
 
 #### 4.5.2 Summarization Event Handling
 
-When a `summarization` event arrives in the SSE stream (dispatched by `SummarizationMiddleware`):
-
-1. The current `messages` are moved to `historyMessages` as a new `HistoricalRun` with `isSummarized: true`.
-2. The summarized `AIMessage` (with a distinct `name` marker, e.g., `name: "summary"`) is **not** displayed in the main message list by default.
-3. A collapsed indicator — *"N messages summarized — click to expand"* — is rendered in place of the removed messages.
-
-This prevents the jarring experience of messages disappearing and gives users an opt-in path to see the full history.
+The `summarization` custom event is dispatched by `SummarizationMiddleware` on the backend. Handle it inside the existing `onCustomEvent` callback that is already passed to `useStream`:
 
 ```typescript
-// In useThreadStream, when a summarization event is received:
-case "summarization": {
-  dispatch({
-    type: "SUMMARIZATION_RECEIVED",
-    payload: {
-      replacedMessageIds: event.data.replaced_message_ids,
-      summary: event.data.summary,
-    },
-  });
-  break;
-}
+// frontend/src/core/threads/hooks.ts — extend the onCustomEvent handler inside useStream()
+
+onCustomEvent(event: unknown) {
+  if (
+    typeof event === "object" &&
+    event !== null &&
+    "type" in event
+  ) {
+    if (event.type === "task_running") {
+      // existing logic …
+      const e = event as { type: "task_running"; task_id: string; message: AIMessage };
+      updateSubtask({ id: e.task_id, latestMessage: e.message });
+    }
+
+    // NEW: context compression fired — snapshot current messages into history
+    if (event.type === "summarization") {
+      const e = event as {
+        type: "summarization";
+        replaced_message_ids: string[];
+        summary: string;
+        run_id: string;
+      };
+      // Move the messages that are about to be replaced into historyMessages
+      setHistoryMessages((prev) => [
+        ...prev,
+        {
+          runId: e.run_id,
+          createdAt: new Date().toISOString(),
+          messages: thread.messages.filter((m) =>
+            e.replaced_message_ids.includes(m.id ?? ""),
+          ),
+          isSummarized: true,
+        },
+      ]);
+    }
+  }
+},
 ```
 
-#### 4.5.3 Infinite Scroll — Load Previous Runs
+The summary `AIMessage` produced by the backend carries a distinct `name: "summary"` field. Callers that render messages (e.g., `message-list.tsx`) should check for this marker and render a collapsed indicator — *"N messages summarized — click to expand"* — rather than showing the raw summary prose by default.
 
-The message list supports upward scroll-to-load. When the user scrolls to the top:
+#### 4.5.3 Load Previous Runs on Scroll-Up
 
-1. The frontend calls `GET /api/threads/{thread_id}/runs?before={oldest_run_id}`.
-2. The previous run's messages are prepended to `historyMessages`.
-3. A **system timestamp message** is injected as a visual separator between runs:
+Add a `loadPreviousRun` callback inside `useThreadStream`. The message list component calls this when the user scrolls to the top:
+
+```typescript
+// frontend/src/core/threads/hooks.ts — add inside useThreadStream()
+
+const loadPreviousRun = useCallback(async () => {
+  if (!threadId || !hasMoreRuns || runs.length === 0) return;
+  const oldest = runs[runs.length - 1];
+  if (!oldest) return;
+
+  const res = await fetch(
+    `${getBackendBaseURL()}/api/threads/${encodeURIComponent(threadId)}/runs/${encodeURIComponent(oldest.run_id)}/messages`,
+  );
+  if (!res.ok) return;
+  const messages: Message[] = await res.json();
+
+  setHistoryMessages((prev) => [
+    {
+      runId: oldest.run_id,
+      createdAt: oldest.created_at,
+      messages,
+      isSummarized: false,
+    },
+    ...prev,
+  ]);
+
+  // Fetch the next page of run summaries
+  const nextRes = await fetch(
+    `${getBackendBaseURL()}/api/threads/${encodeURIComponent(threadId)}/runs?before=${encodeURIComponent(oldest.run_id)}&limit=20`,
+  );
+  if (nextRes.ok) {
+    const nextRuns: RunSummary[] = await nextRes.json();
+    setRuns((prev) => [...prev, ...nextRuns]);
+    setHasMoreRuns(nextRuns.length === 20);
+  }
+}, [threadId, hasMoreRuns, runs]);
+```
+
+A **system timestamp message** is injected as a visual separator between runs by the rendering layer (not the hook). Each separator shows the run's `createdAt` timestamp, model name, and status:
 
 ```
 ─────────────  Mon, Jan 1 2026 · 14:32  ─────────────
 ```
 
-Each run separator also shows the model name and status (success/error) as a lightweight audit trail.
+#### 4.5.4 Updated Return Value
+
+Extend the hook's return tuple to expose the new state and callback:
+
+```typescript
+// frontend/src/core/threads/hooks.ts — update the return at the end of useThreadStream()
+
+return [
+  mergedThread,
+  sendMessage,
+  isUploading,
+  historyMessages,
+  loadPreviousRun,
+  hasMoreRuns,
+] as const;
+```
+
+Update the corresponding destructuring at every call site (currently `use-thread-chat.ts`).
 
 ---
 
