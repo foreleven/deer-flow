@@ -1,0 +1,479 @@
+- generic [active] [ref=e1]:
+  - link "Skip to Content" [ref=e2] [cursor=pointer]:
+    - /url: "#nextra-skip-nav"
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - text: 🎉 Nextra 4.0 has been released.
+      - link "Read blogpost" [ref=e5] [cursor=pointer]:
+        - /url: https://the-guild.dev/blog/nextra-4
+        - text: Read blogpost
+        - img [ref=e6]
+    - button "Dismiss banner" [ref=e9] [cursor=pointer]:
+      - img [ref=e10]
+  - banner [ref=e12]:
+    - navigation [ref=e14]:
+      - link "Home page" [ref=e15] [cursor=pointer]:
+        - /url: /
+        - img [ref=e16]
+      - generic [ref=e19]:
+        - link "Documentation" [ref=e20] [cursor=pointer]:
+          - /url: /docs
+        - link "API" [ref=e21] [cursor=pointer]:
+          - /url: /api
+        - button "Versions" [ref=e22] [cursor=pointer]:
+          - text: Versions
+          - img [ref=e23]
+        - link "Blog" [ref=e25] [cursor=pointer]:
+          - /url: /blog
+        - link "About" [ref=e26] [cursor=pointer]:
+          - /url: /about
+        - link "Showcase" [ref=e27] [cursor=pointer]:
+          - /url: /showcase
+        - link "Sponsors" [ref=e28] [cursor=pointer]:
+          - /url: /sponsors
+      - combobox "Search documentation…" [ref=e31]
+      - link "Project repository" [ref=e32] [cursor=pointer]:
+        - /url: https://github.com/shuding/nextra
+        - img "Project repository" [ref=e33]
+  - text: New New
+  - generic [ref=e35]:
+    - complementary [ref=e36]:
+      - list [ref=e39]:
+        - listitem [ref=e40]:
+          - link "Introduction" [ref=e41] [cursor=pointer]:
+            - /url: /docs
+        - listitem [ref=e42]:
+          - link "File Conventions" [ref=e43] [cursor=pointer]:
+            - /url: /docs/file-conventions
+            - text: File Conventions
+            - img [ref=e44]
+          - list [ref=e46]:
+            - listitem [ref=e47]: Files
+            - listitem [ref=e48]:
+              - link "page.mdx" [ref=e49] [cursor=pointer]:
+                - /url: /docs/file-conventions/page-file
+            - listitem [ref=e50]:
+              - link "_meta.js" [ref=e51] [cursor=pointer]:
+                - /url: /docs/file-conventions/meta-file
+            - listitem [ref=e52]:
+              - link "page.jsx" [ref=e53] [cursor=pointer]:
+                - /url: https://nextjs.org/docs/app/api-reference/file-conventions/page
+                - text: page.jsx
+                - img [ref=e54]
+            - listitem [ref=e57]:
+              - link "layout.jsx" [ref=e58] [cursor=pointer]:
+                - /url: https://nextjs.org/docs/app/api-reference/file-conventions/layout
+                - text: layout.jsx
+                - img [ref=e59]
+            - listitem [ref=e62]: Top-Level Files
+            - listitem [ref=e63]:
+              - link "mdx-components.js" [ref=e64] [cursor=pointer]:
+                - /url: /docs/file-conventions/mdx-components-file
+            - listitem [ref=e65]: Top-Level Folders
+            - listitem [ref=e66]:
+              - link "content" [ref=e67] [cursor=pointer]:
+                - /url: /docs/file-conventions/content-directory
+            - listitem [ref=e68]:
+              - link "src" [ref=e69] [cursor=pointer]:
+                - /url: /docs/file-conventions/src-directory
+            - listitem [ref=e70]:
+              - link "app" [ref=e71] [cursor=pointer]:
+                - /url: https://nextjs.org/docs/app/getting-started/installation?utm_source=nextra.site&utm_medium=referral&utm_campaign=sidebar#create-the-app-directory
+                - text: app
+                - img [ref=e72]
+            - listitem [ref=e75]:
+              - link "public" [ref=e76] [cursor=pointer]:
+                - /url: https://nextjs.org/docs/app/building-your-application/optimizing/static-assets?utm_source=nextra.site&utm_medium=referral&utm_campaign=sidebar
+                - text: public
+                - img [ref=e77]
+        - listitem [ref=e80]:
+          - link "Guide" [ref=e81] [cursor=pointer]:
+            - /url: /docs/guide
+            - text: Guide
+            - img [ref=e82]
+          - list [ref=e85]:
+            - listitem [ref=e86]:
+              - link "Markdown" [ref=e87] [cursor=pointer]:
+                - /url: /docs/guide/markdown
+            - listitem [ref=e88]:
+              - link "Syntax Highlighting" [ref=e89] [cursor=pointer]:
+                - /url: /docs/guide/syntax-highlighting
+            - listitem [ref=e90]:
+              - link "Next.js Link" [ref=e91] [cursor=pointer]:
+                - /url: /docs/guide/link
+            - listitem [ref=e92]:
+              - link "Next.js Image" [ref=e93] [cursor=pointer]:
+                - /url: /docs/guide/image
+            - listitem [ref=e94]:
+              - link "Next.js Static Rendering" [ref=e95] [cursor=pointer]:
+                - /url: /docs/guide/ssg
+            - listitem [ref=e96]:
+              - link "Next.js I18n" [ref=e97] [cursor=pointer]:
+                - /url: /docs/guide/i18n
+            - listitem [ref=e98]:
+              - link "Custom CSS" [ref=e99] [cursor=pointer]:
+                - /url: /docs/guide/custom-css
+            - listitem [ref=e100]:
+              - link "Static Exports" [ref=e101] [cursor=pointer]:
+                - /url: /docs/guide/static-exports
+            - listitem [ref=e102]:
+              - button "Search" [ref=e103] [cursor=pointer]:
+                - text: Search
+                - img [ref=e104]
+              - list [ref=e107]:
+                - listitem [ref=e108]:
+                  - link "Search Engine" [ref=e109] [cursor=pointer]:
+                    - /url: /docs/guide/search
+                - listitem [ref=e110]:
+                  - link "Ask AINew" [ref=e111] [cursor=pointer]:
+                    - /url: /docs/guide/search/ai
+                    - generic [ref=e112]: Ask AINew
+            - listitem [ref=e113]:
+              - link "GitHub Alert Syntax" [ref=e114] [cursor=pointer]:
+                - /url: /docs/guide/github-alert-syntax
+            - listitem [ref=e115]:
+              - link "Usage with Turbopack" [ref=e116] [cursor=pointer]:
+                - /url: /docs/guide/turbopack
+            - listitem [ref=e117]:
+              - link "Deploying" [ref=e118] [cursor=pointer]:
+                - /url: https://nextjs.org/docs/app/building-your-application/deploying?utm_source=nextra.site&utm_medium=referral&utm_campaign=sidebar
+                - text: Deploying
+                - img [ref=e119]
+        - listitem [ref=e122]:
+          - link "Advanced" [ref=e123] [cursor=pointer]:
+            - /url: /docs/advanced
+            - text: Advanced
+            - img [ref=e124]
+          - list [ref=e126]:
+            - listitem [ref=e127]:
+              - link "Npm2Yarn" [ref=e128] [cursor=pointer]:
+                - /url: /docs/advanced/npm2yarn
+            - listitem [ref=e129]:
+              - link "Mermaid" [ref=e130] [cursor=pointer]:
+                - /url: /docs/advanced/mermaid
+            - listitem [ref=e131]:
+              - link "Tailwind CSS" [ref=e132] [cursor=pointer]:
+                - /url: /docs/advanced/tailwind-css
+            - listitem [ref=e133]:
+              - link "LaTeX" [ref=e134] [cursor=pointer]:
+                - /url: /docs/advanced/latex
+            - listitem [ref=e135]:
+              - link "Rendering Tables" [ref=e136] [cursor=pointer]:
+                - /url: /docs/advanced/table
+            - listitem [ref=e137]:
+              - link "TypeScript" [ref=e138] [cursor=pointer]:
+                - /url: /docs/advanced/typescript
+            - listitem [ref=e139]:
+              - link "Remote Content" [ref=e140] [cursor=pointer]:
+                - /url: /docs/advanced/remote
+            - listitem [ref=e141]:
+              - link "Customize Cascade Layers" [ref=e142] [cursor=pointer]:
+                - /url: /docs/advanced/customize-the-cascade-layers
+            - listitem [ref=e143]:
+              - link "Twoslash Support" [ref=e144] [cursor=pointer]:
+                - /url: /docs/advanced/twoslash
+        - listitem [ref=e145]:
+          - link "Built-In Components" [ref=e146] [cursor=pointer]:
+            - /url: /docs/built-ins
+            - text: Built-In Components
+            - img [ref=e147]
+          - list [ref=e149]:
+            - listitem [ref=e150]: Layout Components
+            - listitem [ref=e151]:
+              - link "Banner" [ref=e152] [cursor=pointer]:
+                - /url: /docs/built-ins/banner
+            - listitem [ref=e153]:
+              - link "Head" [ref=e154] [cursor=pointer]:
+                - /url: /docs/built-ins/head
+            - listitem [ref=e155]:
+              - link "Search" [ref=e156] [cursor=pointer]:
+                - /url: /docs/built-ins/search
+            - listitem [ref=e157]: Content Components
+            - listitem [ref=e158]:
+              - link "Bleed" [ref=e159] [cursor=pointer]:
+                - /url: /docs/built-ins/bleed
+            - listitem [ref=e160]:
+              - link "Callout" [ref=e161] [cursor=pointer]:
+                - /url: /docs/built-ins/callout
+            - listitem [ref=e162]:
+              - link "Cards" [ref=e163] [cursor=pointer]:
+                - /url: /docs/built-ins/cards
+            - listitem [ref=e164]:
+              - link "FileTree" [ref=e165] [cursor=pointer]:
+                - /url: /docs/built-ins/filetree
+            - listitem [ref=e166]:
+              - link "Steps" [ref=e167] [cursor=pointer]:
+                - /url: /docs/built-ins/steps
+            - listitem [ref=e168]:
+              - link "Table" [ref=e169] [cursor=pointer]:
+                - /url: /docs/built-ins/table
+            - listitem [ref=e170]:
+              - link "Tabs" [ref=e171] [cursor=pointer]:
+                - /url: /docs/built-ins/tabs
+            - listitem [ref=e172]: Other Components
+            - listitem [ref=e173]:
+              - link "MDXRemote" [ref=e174] [cursor=pointer]:
+                - /url: /docs/built-ins/mdxremote
+            - listitem [ref=e175]:
+              - link "Playground" [ref=e176] [cursor=pointer]:
+                - /url: /docs/built-ins/playground
+            - listitem [ref=e177]:
+              - link "TSDocNew" [ref=e178] [cursor=pointer]:
+                - /url: /docs/built-ins/tsdoc
+                - generic [ref=e179]: TSDocNew
+        - listitem [ref=e180]: Themes
+        - listitem [ref=e181]:
+          - link "Docs Theme" [ref=e182] [cursor=pointer]:
+            - /url: /docs/docs-theme
+            - text: Docs Theme
+            - img [ref=e183]
+          - list [ref=e185]:
+            - listitem [ref=e186]:
+              - link "Get Started" [ref=e187] [cursor=pointer]:
+                - /url: /docs/docs-theme/start
+            - listitem [ref=e188]:
+              - link "Built-In Components" [ref=e189] [cursor=pointer]:
+                - /url: /docs/docs-theme/built-ins
+                - text: Built-In Components
+                - img [ref=e190]
+              - list [ref=e192]:
+                - listitem [ref=e193]:
+                  - link "Layout" [ref=e194] [cursor=pointer]:
+                    - /url: /docs/docs-theme/built-ins/layout
+                - listitem [ref=e195]:
+                  - link "Footer" [ref=e196] [cursor=pointer]:
+                    - /url: /docs/docs-theme/built-ins/footer
+                - listitem [ref=e197]:
+                  - link "Navbar" [ref=e198] [cursor=pointer]:
+                    - /url: /docs/docs-theme/built-ins/navbar
+                - listitem [ref=e199]:
+                  - link "NotFoundPage" [ref=e200] [cursor=pointer]:
+                    - /url: /docs/docs-theme/built-ins/not-found
+            - listitem [ref=e201]:
+              - link "API" [ref=e202] [cursor=pointer]:
+                - /url: /docs/docs-theme/api
+        - listitem [ref=e203]:
+          - link "Blog Theme" [ref=e204] [cursor=pointer]:
+            - /url: /docs/blog-theme
+            - text: Blog Theme
+            - img [ref=e205]
+          - list [ref=e207]:
+            - listitem [ref=e208]:
+              - link "Get Started" [ref=e209] [cursor=pointer]:
+                - /url: /docs/blog-theme/start
+            - listitem [ref=e210]:
+              - link "Get Posts and Their Tags" [ref=e211] [cursor=pointer]:
+                - /url: /docs/blog-theme/get-posts-and-tags
+            - listitem [ref=e212]:
+              - link "/posts Page" [ref=e213] [cursor=pointer]:
+                - /url: /docs/blog-theme/posts
+                - code [ref=e214]: /posts
+                - text: Page
+            - listitem [ref=e215]:
+              - link "/tags/:id Page" [ref=e216] [cursor=pointer]:
+                - /url: /docs/blog-theme/tags
+                - code [ref=e217]: /tags/:id
+                - text: Page
+            - listitem [ref=e218]:
+              - link "/rss.xml Route" [ref=e219] [cursor=pointer]:
+                - /url: /docs/blog-theme/rss
+                - code [ref=e220]: /rss.xml
+                - text: Route
+        - listitem [ref=e221]:
+          - link "Custom Theme" [ref=e222] [cursor=pointer]:
+            - /url: /docs/custom-theme
+        - listitem [ref=e223]: More
+        - listitem [ref=e224]:
+          - link "About Nextra" [ref=e225] [cursor=pointer]:
+            - /url: /about
+        - listitem [ref=e226]:
+          - link "Next.js Docs" [ref=e227] [cursor=pointer]:
+            - /url: https://nextjs.org?utm_source=nextra.site&utm_medium=referral&utm_campaign=sidebar
+            - text: Next.js Docs
+            - img [ref=e228]
+        - listitem [ref=e231]:
+          - link "Migration from Nextra v3" [ref=e232] [cursor=pointer]:
+            - /url: https://the-guild.dev/blog/nextra-4?utm_source=nextra.site&utm_campaign=sidebar&utm_content=sidebar_link#nextra-theme-docs-changes
+            - text: Migration from Nextra v3
+            - img [ref=e233]
+      - generic [ref=e236]:
+        - button "Light" [ref=e237] [cursor=pointer]:
+          - img [ref=e238]
+          - text: Light
+        - button "Collapse sidebar" [expanded] [ref=e240] [cursor=pointer]:
+          - img [ref=e241]
+    - article [ref=e244]:
+      - generic [ref=e245]:
+        - link "Documentation" [ref=e246] [cursor=pointer]:
+          - /url: /docs
+        - img [ref=e247]
+        - link "Guide" [ref=e249] [cursor=pointer]:
+          - /url: /docs/guide
+        - img [ref=e250]
+        - generic "Next.js I18n" [ref=e252]
+      - generic [ref=e253]:
+        - button "Copy page" [ref=e254] [cursor=pointer]:
+          - img [ref=e255]
+          - text: Copy page
+        - button [ref=e258] [cursor=pointer]:
+          - img [ref=e259]
+      - main [ref=e261]:
+        - heading "Next.js I18n" [level=1] [ref=e262]
+        - generic [ref=e263]:
+          - img [ref=e265]
+          - generic [ref=e267]:
+            - text: Warning
+            - paragraph [ref=e268]:
+              - text: This feature is only available in
+              - code [ref=e269]: nextra-theme-docs
+              - text: .
+        - paragraph [ref=e270]:
+          - text: Nextra supports
+          - link "Next.js Internationalized Routing" [ref=e271] [cursor=pointer]:
+            - /url: https://nextjs.org/docs/advanced-features/i18n-routing
+            - text: Next.js Internationalized Routing
+            - img [ref=e272]
+          - text: out of the box. These docs explain how to configure and use it.
+        - generic [ref=e275]:
+          - heading "Add i18n configPermalink for this section" [level=2] [ref=e276]:
+            - text: Add i18n config
+            - link "Permalink for this section" [ref=e277] [cursor=pointer]:
+              - /url: "#add-i18n-config"
+              - text: "#"
+          - paragraph [ref=e278]:
+            - text: To add multi-language pages to your Nextra application, you need to config
+            - code [ref=e279]: i18n
+            - text: in
+            - code [ref=e280]: next.config.mjs
+            - text: "first:"
+          - generic [ref=e281]:
+            - generic [ref=e282]:
+              - img [ref=e283]
+              - generic [ref=e285]: next.config.mjs
+              - button "Copy code" [ref=e286] [cursor=pointer]:
+                - img [ref=e287]
+            - code [ref=e291]:
+              - generic [ref=e292]: import nextra from 'nextra'
+              - generic [ref=e294]: "const withNextra = nextra({"
+              - generic [ref=e295]: // ... other Nextra config options
+              - generic [ref=e296]: "})"
+              - generic [ref=e298]: "export default withNextra({"
+              - generic [ref=e299]: "i18n: {"
+              - generic [ref=e300]: "locales: ['en', 'zh', 'de'],"
+              - generic [ref=e301]: "defaultLocale: 'en'"
+              - generic [ref=e302]: "}"
+              - generic [ref=e303]: "})"
+          - generic [ref=e304]:
+            - img [ref=e306]
+            - generic [ref=e308]:
+              - text: Note
+              - paragraph [ref=e309]:
+                - text: You can use any format of
+                - link "UTS Locale Identifiers" [ref=e310] [cursor=pointer]:
+                  - /url: https://www.unicode.org/reports/tr35/tr35-59/tr35.html#Identifiers
+                  - text: UTS Locale Identifiers
+                  - img [ref=e311]
+                - text: for defining your locales in the
+                - code [ref=e314]: next.config
+                - text: file, e.g. language with region format
+                - code [ref=e315]: en-US
+                - text: (English as spoken in the United States).
+          - heading "Configure the docs themePermalink for this section" [level=2] [ref=e316]:
+            - text: Configure the docs theme
+            - link "Permalink for this section" [ref=e317] [cursor=pointer]:
+              - /url: "#configure-the-docs-theme"
+              - text: "#"
+          - paragraph [ref=e318]:
+            - text: Add the
+            - code [ref=e319]: i18n
+            - text: option to your
+            - code [ref=e320]: theme.config.jsx
+            - text: "to configure the language dropdown:"
+          - generic [ref=e321]:
+            - generic [ref=e322]:
+              - img [ref=e323]
+              - generic [ref=e325]: theme.config.jsx
+              - button "Copy code" [ref=e326] [cursor=pointer]:
+                - img [ref=e327]
+            - code [ref=e331]:
+              - generic [ref=e332]: "i18n: ["
+              - generic [ref=e333]: "{ locale: 'en', name: 'English' },"
+              - generic [ref=e334]: "{ locale: 'zh', name: '中文' },"
+              - generic [ref=e335]: "{ locale: 'de', name: 'Deutsch' },"
+              - generic [ref=e336]: "{ locale: 'ar', name: 'العربية', direction: 'rtl' }"
+              - generic [ref=e337]: "]"
+          - heading "Automatically detect and redirect to user-selected language (optional)Permalink for this section" [level=2] [ref=e338]:
+            - text: Automatically detect and redirect to user-selected language (
+            - emphasis [ref=e339]: optional
+            - text: )
+            - link "Permalink for this section" [ref=e340] [cursor=pointer]:
+              - /url: "#automatically-detect-and-redirect-to-user-selected-language-optional"
+              - text: "#"
+          - paragraph [ref=e341]:
+            - text: You can automatically detect the user’s preferred language and redirect them to the corresponding version of the site. To achieve this, create a
+            - code [ref=e342]: proxy.ts
+            - text: or
+            - code [ref=e343]: proxy.js
+            - text: file in the root of your project and export Nextra’s middleware function from
+            - code [ref=e344]: nextra/locales
+            - text: ":"
+          - generic [ref=e345]:
+            - generic [ref=e346]:
+              - img [ref=e347]
+              - generic [ref=e349]: proxy.ts
+              - button "Copy code" [ref=e350] [cursor=pointer]:
+                - img [ref=e351]
+            - code [ref=e355]:
+              - generic [ref=e356]: "export { proxy } from 'nextra/locales'"
+              - generic [ref=e358]: "export const config = {"
+              - generic [ref=e359]: "// Matcher ignoring `/_next/` and `/api/`"
+              - generic [ref=e360]: "matcher: ["
+              - generic [ref=e361]: "'/((?!api|_next/static|_next/image|favicon.ico|icon.svg|apple-icon.png|manifest|_pagefind).*)'"
+              - generic [ref=e362]: "]"
+              - generic [ref=e363]: "}"
+          - generic [ref=e364]:
+            - img [ref=e366]
+            - generic [ref=e368]:
+              - text: Warning
+              - paragraph [ref=e369]:
+                - text: This approach will not work for i18n sites that are statically exported with
+                - code [ref=e370]: "output: 'export'"
+                - text: in
+                - code [ref=e371]: nextConfig
+                - text: .
+          - heading "Custom 404 page (optional)Permalink for this section" [level=2] [ref=e372]:
+            - text: Custom 404 page (
+            - emphasis [ref=e373]: optional
+            - text: )
+            - link "Permalink for this section" [ref=e374] [cursor=pointer]:
+              - /url: "#custom-404-page-optional"
+              - text: "#"
+          - paragraph [ref=e375]:
+            - text: You can have a custom
+            - code [ref=e376]: not-found.jsx
+            - text: with translations for an i18n website that uses a shared theme layout. For guidance on implementing this, you can check out the
+            - link "SWR i18n example" [ref=e377] [cursor=pointer]:
+              - /url: https://github.com/shuding/nextra/blob/c9d0ffc8687644401412b8adc34af220cccddf82/examples/swr-site/app/%5Blang%5D/not-found.ts
+              - text: SWR i18n example
+              - img [ref=e378]
+            - text: .
+      - generic [ref=e381]:
+        - text: Last updated on
+        - time [ref=e382]: December 4, 2025
+      - generic [ref=e383]:
+        - link "Next.js Static Rendering" [ref=e384] [cursor=pointer]:
+          - /url: /docs/guide/ssg
+          - img [ref=e385]
+          - text: Next.js Static Rendering
+        - link "Custom CSS" [ref=e387] [cursor=pointer]:
+          - /url: /docs/guide/custom-css
+          - text: Custom CSS
+          - img [ref=e388]
+  - generic [ref=e390]:
+    - separator [ref=e391]
+    - contentinfo [ref=e392]:
+      - link "Powered by" [ref=e393] [cursor=pointer]:
+        - /url: https://vercel.com?utm_source=nextra.site
+        - text: Powered by
+        - img [ref=e394]
+      - paragraph [ref=e396]: © 2025 The Nextra Project.
