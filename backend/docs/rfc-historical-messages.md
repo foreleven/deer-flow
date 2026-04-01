@@ -88,7 +88,9 @@ Listing runs for a thread uses `store.asearch(RUNS_NS, filter={"thread_id": thre
 ```python
 # backend/packages/harness/deerflow/agents/journal.py
 
+import json
 from langchain_core.callbacks import BaseCallbackHandler
+from deerflow.runtime.serialization import serialize_lc_object
 
 class RunJournal(BaseCallbackHandler):
     """
@@ -114,8 +116,8 @@ class RunJournal(BaseCallbackHandler):
     # --- Message events (mirror stream API custom event types) ---
 
     def on_llm_start(self, ...):          self._write("llm_start", {...})
-    def on_llm_new_token(self, ...):      self._write("llm_token", {...})
-    def on_llm_end(self, ...):            self._write("llm_end", {...})
+    # on_llm_new_token is intentionally omitted by default (see Q3)
+    def on_llm_end(self, response, ...):  self._write("llm_end", {"message": serialize_lc_object(response.generations[0][0].message)})
     def on_tool_start(self, ...):         self._write("tool_start", {...})
     def on_tool_end(self, ...):           self._write("tool_end", {...})
     def on_tool_error(self, ...):         self._write("tool_error", {...})
@@ -126,8 +128,8 @@ class RunJournal(BaseCallbackHandler):
 
     # --- Helpers ---
 
-    def _write(self, event: str, data: dict) -> None:
-        line = json.dumps({"event": event, "data": data, "ts": utc_now()})
+    def _write(self, event: str, data: Any) -> None:
+        line = json.dumps({"event": event, "data": serialize_lc_object(data), "ts": utc_now()})
         self._file.write(line + "\n")
         self._file.flush()
 ```
@@ -140,6 +142,68 @@ journal = RunJournal(run_id=run_id, thread_id=thread_id, journal_path=journal_pa
 config["callbacks"] = [journal]
 await graph.astream(input, config=config, ...)
 ```
+
+---
+
+#### 4.2.1 Serialization: Reuse `serialize_lc_object`
+
+All journal writes must route through `deerflow.runtime.serialization.serialize_lc_object` — the same helper used by `worker.py` when publishing SSE events. This ensures:
+
+- LangChain / LangGraph objects (`AIMessage`, `ToolMessage`, `HumanMessage`, `LLMResult`, …) are converted via `model_dump()` (Pydantic v2) or `dict()` (Pydantic v1) before `json.dumps`.
+- Nested dicts and lists are recursively handled.
+- Unknown objects fall back to `str()`.
+
+Calling `json.dumps` directly on callback arguments (e.g., the `LLMResult` passed to `on_llm_end`) without this step will raise `TypeError: Object of type AIMessage is not JSON serializable`.
+
+---
+
+#### 4.2.2 Callback Completeness: No Manual Chunk Merging Required
+
+LangGraph's `graph.astream(stream_mode="messages")` emits **`AIMessageChunk`** objects — one per streaming token. Accumulating them into a full `AIMessage` would require manual `reduce`/`+` logic in the callback.
+
+The callback path avoids this entirely:
+
+| Callback | Data received | Completeness |
+|----------|--------------|--------------|
+| `on_llm_new_token(token)` | Single `str` token | ❌ chunk — skip for journal (see Q3) |
+| `on_llm_end(response)` | `LLMResult` with `generations[0][0].message` | ✅ **complete `AIMessage`** — use this |
+| `on_tool_start(serialized, inputs)` | Full tool input dict | ✅ complete |
+| `on_tool_end(output)` | Full tool output `str` | ✅ complete |
+| `on_custom_event(name, data)` | Full custom event payload | ✅ complete |
+
+**Decision**: `RunJournal` writes the complete `AIMessage` from `on_llm_end` into the `llm_end` journal entry. `on_llm_new_token` is **not** called by default (opt-in via `journal.stream_tokens = True`; see Open Question Q3).
+
+---
+
+#### 4.2.3 Format Compatibility: Callback Messages vs `useStream` Messages
+
+The frontend's `useStream` hook (from `@langchain/langgraph-sdk/react`) populates `thread.messages` from the LangGraph `values`-mode SSE stream. In the deerflow gateway, `worker.py` serializes those values via `serialize_channel_values` → `serialize_lc_object` → `model_dump()`. The result is the same dict shape as calling `AIMessage.model_dump()` directly.
+
+`AIMessage.model_dump()` produces:
+
+```json
+{
+  "type": "ai",
+  "content": "...",
+  "id": "run-<uuid>-0",
+  "name": null,
+  "tool_calls": [],
+  "invalid_tool_calls": [],
+  "additional_kwargs": {},
+  "response_metadata": {"model_name": "gpt-4o", ...},
+  "usage_metadata": {...},
+  "example": false
+}
+```
+
+The TypeScript `Message` type from `@langchain/langgraph-sdk` uses the same field names (`type`, `content`, `id`, `tool_calls`, …). The extra Python-only fields (`example`, `invalid_tool_calls`) are ignored by the TypeScript SDK as unknown keys. **The structure is compatible**: a callback-serialized `AIMessage` can be served directly from the `/messages` endpoint and rendered by the existing frontend message components.
+
+**One important caveat — the `id` field**:
+
+- **From `values` stream (LangGraph state)**: The message `id` is assigned by LangGraph's state reducer for deduplication (e.g., `"run-<uuid>-0"`). This ID is stable and matches what `useStream` stores.
+- **From `on_llm_end` callback**: The message `id` in the `LLMResult` comes from the LLM provider's response or is auto-generated by `langchain_core` at call time. It may be a different value (e.g., `"chatcmpl-xxx"`).
+
+This means that if the frontend tries to correlate journal messages with live-stream messages by `id`, the IDs may not match. The `/messages` endpoint should therefore be treated as a **standalone reconstruction** for display purposes, not as a delta against an existing in-memory state. For the historical display use-case (loading previous runs that are no longer in the active stream), this is not a problem — the frontend renders the returned list as-is.
 
 ---
 
@@ -486,7 +550,8 @@ Gateway: POST /api/threads/{thread_id}/runs/stream
             │
             ├─ RunJournal.on_chain_start()  → JSONL: run_start
             ├─ RunJournal.on_llm_start()   → JSONL: llm_start
-            ├─ RunJournal.on_llm_new_token() → JSONL: llm_token (streamed)
+            ├─ RunJournal.on_llm_new_token() → JSONL: llm_token (opt-in, default off)
+            ├─ RunJournal.on_llm_end()     → JSONL: llm_end (complete AIMessage via serialize_lc_object)
             ├─ RunJournal.on_tool_start()  → JSONL: tool_start
             ├─ RunJournal.on_tool_end()    → JSONL: tool_end
             ├─ RunJournal.on_custom_event("summarization", ...) → JSONL: summarization
@@ -566,7 +631,9 @@ File system (local) or Object Storage (S3)
 |---|----------|-------|
 | Q1 | Should `RunJournal` write synchronously or buffer async? | Sync is simpler and avoids dropped events on crash. |
 | Q2 | Should the JSONL journal be compressed (gzip)? | Useful for long-running runs; can be toggled per config. |
-| Q3 | Token-level streaming (`llm_token`) produces very large journals. Should it be opt-in? | Default: off. Enable with `journal.stream_tokens = True` in config. |
+| Q3 | Token-level streaming (`llm_token`) produces very large journals. Should it be opt-in? | Default: off. `on_llm_new_token` is not implemented by default. Enable with `journal.stream_tokens = True` in config. The complete message is always recorded via `on_llm_end`. |
 | Q4 | How are runs scoped per user in a multi-user deployment? | The Store already supports user-scoped namespaces; runs can follow the same pattern. |
 | Q5 | Is a `messages` table needed in addition to the journal? | Current proposal: store `last_ai_message` on the `RunRecord` as a convenience field; full messages live in the JSONL. A dedicated table can be added if query patterns demand it. |
 | Q6 | Journal file retention policy? | Propose configurable TTL (default: no expiry). A cleanup job can archive or delete old journals. |
+| Q7 | The `id` field on callback-sourced messages differs from LangGraph state message IDs. Does this matter? | The `/messages` endpoint is a standalone reconstruction for display only — it is never delta-merged with live-stream state. The `id` mismatch is therefore not a problem for the historical view use-case (see §4.2.3). |
+| Q8 | Should `_write` use `serialize_lc_object` or a custom encoder? | Use `serialize_lc_object` from `deerflow.runtime.serialization` — same helper used by `worker.py` — to keep the JSONL format consistent with the SSE payload shape. |
