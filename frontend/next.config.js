@@ -12,9 +12,7 @@ function getInternalServiceURL(envKey, fallbackURL) {
 }
 import nextra from "nextra";
 
-const withNextra = nextra({
-  contentDirBasePath: "/docs",
-});
+const withNextra = nextra({});
 
 /** @type {import("next").NextConfig} */
 const config = {

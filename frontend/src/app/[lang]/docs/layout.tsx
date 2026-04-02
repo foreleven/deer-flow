@@ -1,14 +1,10 @@
+import type { PageMapItem } from "nextra";
 import { getPageMap } from "nextra/page-map";
 import { Footer, Layout } from "nextra-theme-docs";
 
-import "nextra-theme-docs/style.css";
 import { Header } from "@/components/landing/header";
 import { getLocaleByLang } from "@/core/i18n/locale";
-
-export const metadata = {
-  // Define your metadata here
-  // For more information on metadata API, see: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
-};
+import "nextra-theme-docs/style.css";
 
 const footer = <Footer>MIT {new Date().getFullYear()} © Nextra.</Footer>;
 
@@ -17,9 +13,23 @@ const i18n = [
   { locale: "zh", name: "中文" },
 ];
 
+function formatPageRoute(base: string, items: PageMapItem[]): PageMapItem[] {
+  return items.map((item) => {
+    if ("route" in item) {
+      item.route = `${base}${item.route}`;
+    }
+    if ("children" in item && item.children) {
+      item.children = formatPageRoute(base, item.children);
+    }
+    return item;
+  });
+}
+
 export default async function DocLayout({ children, params }) {
   const { lang } = await params;
   const locale = getLocaleByLang(lang);
+  const pages = await getPageMap(`/${lang}`);
+
   return (
     <Layout
       navbar={
@@ -29,7 +39,7 @@ export default async function DocLayout({ children, params }) {
           locale={locale}
         />
       }
-      pageMap={await getPageMap(`/${lang}/docs`)}
+      pageMap={formatPageRoute(`/${lang}/docs`, pages)}
       docsRepositoryBase="https://github.com/shuding/nextra/tree/main/docs"
       footer={footer}
       i18n={i18n}

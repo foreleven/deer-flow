@@ -10,7 +10,7 @@ const meta: MetaRecord = {
   harness: {
     title: "DeerFlow Harness",
   },
-  app: {
+  application: {
     title: "DeerFlow App",
   },
   tutorials: {
@@ -18,6 +18,9 @@ const meta: MetaRecord = {
   },
   reference: {
     title: "Reference",
+  },
+  workspace: {
+    type: "page",
   },
 };
 
