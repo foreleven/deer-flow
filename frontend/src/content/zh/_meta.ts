@@ -2,7 +2,7 @@ import type { MetaRecord } from "nextra";
 
 const meta: MetaRecord = {
   index: {
-    title: "Overview",
+    title: "概览",
   },
   workspace: {
     type: "page",
