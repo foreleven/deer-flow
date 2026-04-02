@@ -40,7 +40,7 @@ export default async function DocLayout({ children, params }) {
         />
       }
       pageMap={formatPageRoute(`/${lang}/docs`, pages)}
-      docsRepositoryBase="https://github.com/shuding/nextra/tree/main/docs"
+      docsRepositoryBase="https://github.com/bytedance/deerflow/tree/main/frontend/src/app/content"
       footer={footer}
       i18n={i18n}
       // ... Your additional layout options

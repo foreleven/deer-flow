@@ -15,7 +15,6 @@ const Wrapper = getMDXComponents().wrapper;
 
 export default async function Page(props) {
   const params = await props.params;
-  console.log("params", params);
   const {
     default: MDXContent,
     toc,
